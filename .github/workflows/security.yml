@@ -45,6 +45,37 @@ jobs:
       - name: Run tests
         run: npm test --silent
 
+  protected-runtime-controls:
+    name: Protected runtime controls
+    runs-on: ubuntu-latest
+    needs: tests
+    env:
+      NODE_ENV: staging
+      APP_BASE_URL: https://note-app.example.gov
+      MONGODB_URI: mongodb+srv://cluster0.example.mongodb.net/noteAppProtectedCi
+      SESSION_SECRET: ci-session-secret-0123456789abcdef
+      NOTE_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      TRUST_PROXY_HOPS: '1'
+      TRUSTED_PROXY_ADDRESSES: '127.0.0.1'
+      IMMUTABLE_LOGGING_ENABLED: 'true'
+      IMMUTABLE_LOGGING_URL: https://logs.example.gov/append
+      IMMUTABLE_LOGGING_TOKEN: ci-log-token
+      SELF_SIGNUP_ENABLED: 'false'
+      GOOGLE_AUTO_PROVISION_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+      - name: Validate protected runtime configuration
+        run: node -e "require('./src/config/runtimeConfig').validateRuntimeConfig(process.env); console.log('protected-runtime-config-ok')"
+      - name: Run protected-runtime regression, bootstrap, and app smoke slice
+        run: node ./node_modules/mocha/bin/mocha.js --require ./test/testSetup.js "test/runtimeConfig.test.js" "test/secureTransportMiddleware.test.js" "test/bootstrapApplication.test.js" "test/protectedRuntimeApp.test.js"
+
   dast:
     name: DAST
     runs-on: ubuntu-latest

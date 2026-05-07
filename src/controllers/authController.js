@@ -9,6 +9,7 @@ const {
 } = require('../utils/validation');
 const { handleAuthFailure } = require('../utils/errorHandler');
 const authService = require('../services/authService');
+const { isSelfSignupEnabled } = require('../services/identityProvisioningService');
 
 const AUTH_PAYLOAD_FIELDS = ['email', 'password', CSRF_BODY_FIELD];
 
@@ -83,9 +84,11 @@ function handleLogin(req, res, next) {
 
         if (!user) {
             return authService.renderLoginPage(res, {
-                error: info && info.code === 'ACCOUNT_LOCKED'
-                    ? authService.ACCOUNT_LOCKED_ERROR
-                    : authService.GENERIC_LOGIN_ERROR
+                error: info && info.code === 'ACCOUNT_DISABLED'
+                    ? authService.ACCOUNT_DISABLED_ERROR
+                    : (info && info.code === 'ACCOUNT_LOCKED'
+                        ? authService.ACCOUNT_LOCKED_ERROR
+                        : authService.GENERIC_LOGIN_ERROR)
             });
         }
 
@@ -116,6 +119,15 @@ function handleLogin(req, res, next) {
 
 async function handleSignup(req, res) {
     try {
+        const runtimeConfig = req.app && req.app.locals ? req.app.locals.runtimeConfig || {} : {};
+        if (!isSelfSignupEnabled(runtimeConfig)) {
+            return res.status(403).render('pages/signup', {
+                title: 'Sign Up',
+                error: authService.SELF_SIGNUP_DISABLED_ERROR,
+                csrfToken: res.locals.csrfToken
+            });
+        }
+
         const { email, password } = sanitizeAuthPayload(req.body);
 
         if (hasUnexpectedAuthFields(req.body)) {
@@ -143,7 +155,7 @@ async function handleSignup(req, res) {
             return res.redirect('/auth/login');
         }
 
-        await authService.createLocalUser({ email, password });
+        await authService.createLocalUser({ email, password, runtimeConfig });
         return res.redirect('/auth/login');
     } catch (error) {
         if (error.name === 'ValidationError') {
@@ -223,9 +235,13 @@ function handleGoogleCallback(req, res, next) {
 
         if (!user) {
             return authService.renderLoginPage(res, {
-                error: info && info.code === 'ACCOUNT_LOCKED'
-                    ? authService.ACCOUNT_LOCKED_ERROR
-                    : null
+                error: info && info.code === 'ACCOUNT_DISABLED'
+                    ? authService.ACCOUNT_DISABLED_ERROR
+                    : (info && info.code === 'ACCOUNT_LOCKED'
+                        ? authService.ACCOUNT_LOCKED_ERROR
+                        : (info && info.code === 'IDENTITY_NOT_PROVISIONED'
+                            ? authService.GOOGLE_IDENTITY_PROVISIONING_ERROR
+                            : null))
             });
         }
 

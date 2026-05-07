@@ -19,7 +19,8 @@ const {
 } = require('./runtime/automation');
 const { buildSessionManagementConfig } = require('./runtime/sessionManagement');
 const { buildTransportConfig } = require('./runtime/transport');
-const { buildDatabaseConfig } = require('./runtime/database');
+const { buildDatabaseConfig, buildRuntimePosture } = require('./runtime/database');
+const { buildIdentityLifecycleConfig } = require('./runtime/identityLifecycle');
 const { buildImmutableLoggingConfig } = require('./runtime/immutableLogging');
 const { buildBreakGlassConfig } = require('./runtime/breakGlass');
 const { toDiagnosticRuntimeConfig } = require('./runtime/diagnostics');
@@ -28,6 +29,7 @@ function validateRuntimeConfig(env = process.env) {
     const errors = [];
     const cipherAlgo = parseCipherAlgo(env, errors);
     const activeCipherSuite = getActiveCipherSuite(cipherAlgo);
+    const runtimePosture = buildRuntimePosture(env, errors);
     const database = buildDatabaseConfig(env, errors);
 
     if (!isNonEmptyString(env.SESSION_SECRET)) {
@@ -85,6 +87,7 @@ function validateRuntimeConfig(env = process.env) {
     const intrusionBatch = buildIntrusionBatchConfig(env, errors);
     const sessionManagement = buildSessionManagementConfig(env, errors);
     const transport = buildTransportConfig(env, errors);
+    const identityLifecycle = buildIdentityLifecycleConfig(env, errors);
     const immutableLogging = buildImmutableLoggingConfig(env, errors);
     const breakGlass = buildBreakGlassConfig(env, errors);
 
@@ -94,12 +97,14 @@ function validateRuntimeConfig(env = process.env) {
 
     return {
         dbURI: database.uri,
+        runtimePosture,
         database,
         sessionSecret: env.SESSION_SECRET.trim(),
         noteEncryptionKey: env.NOTE_ENCRYPTION_KEY.trim(),
         cipherAlgo,
         appBaseUrl: getConfiguredAppBaseUrl(env),
         googleAuthEnabled: hasGoogleAuthCredentials(env),
+        identityLifecycle,
         sessionManagement,
         transport,
         immutableLogging,

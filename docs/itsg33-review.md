@@ -40,12 +40,28 @@ Implemented Remediations
    - Rationale: the MongoDB and Nginx support containers are now pinned to immutable image digests and run with explicit resource requests and limits, reducing supply-chain drift and noisy-neighbor risk in the local immutable stack.
 
 7. Residual operational evidence collection now has repository-backed workflow artifacts.
-   - Files: `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/*`, `docs/itsg33-evidence-checklist.md`, `docs/itsg33-operations-runbook.md`
-   - Rationale: release evidence, monthly reviews, contingency drills, privileged-access reviews, and annual governance refreshes now have standardized templates and documented procedures rather than informal ad hoc tracking.
+   - Files: `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/*`, `.github/workflows/itsg33-monthly-review.yml`, `.github/workflows/itsg33-backup-restore-drill.yml`, `docs/itsg33-evidence-checklist.md`, `docs/itsg33-operations-runbook.md`
+   - Rationale: release evidence, monthly reviews, contingency drills, privileged-access reviews, and annual governance refreshes now have standardized templates plus environment-integrated workflow evidence instead of relying only on informal ad hoc tracking.
 
 8. Repository automation now enforces ITSG-33 drift checks and recurring evidence reminders.
    - Files: `.github/workflows/ci.yml`, `.github/workflows/itsg33-release-evidence.yml`, `.github/workflows/itsg33-monthly-review.yml`, `.github/workflows/itsg33-quarterly-review.yml`, `.github/workflows/itsg33-annual-review.yml`, `.github/workflows/itsg33-k8s-support-image-refresh.yml`, `scripts/check-k8s-image-pins.js`, `scripts/check-itsg33-docs.js`, `scripts/refresh-k8s-support-image-digests.js`, `.github/dependabot.yml`
    - Rationale: the repository now checks for mutable support-image drift, validates the required ITSG-33 artifact set, publishes release-evidence rollups to pull requests, creates recurring review issues automatically, refreshes support-image digest pins through reviewable pull requests, and keeps core dependency-update automation active.
+
+9. Monthly evidence collection now includes secret-rotation posture.
+   - Files: `.github/workflows/itsg33-monthly-review.yml`, `scripts/check-secret-rotation-age.js`
+   - Rationale: the monthly control review can now attach structured evidence showing which operational credentials are within policy, nearing expiry, stale, or missing metadata.
+
+10. Quarterly evidence collection now includes infrastructure conformance and non-production break-glass drills.
+    - Files: `.github/workflows/itsg33-backup-restore-drill.yml`, `.github/workflows/itsg33-break-glass-drill.yml`, `scripts/check-infrastructure-conformance.js`, `scripts/run-break-glass-drill.js`
+    - Rationale: the quarterly evidence package can now collect HTTPS redirect, certificate, header, and protected health posture, and can also execute an approval-gated break-glass activation/reset drill with structured reporting.
+
+11. Quarterly privileged-access review now has a dedicated scheduled evidence path.
+    - Files: `.github/workflows/itsg33-privileged-access-review.yml`, `scripts/export-privileged-access-report.js`
+    - Rationale: privileged-role exports and previous-period diffs are now refreshed on a quarterly cadence and linked directly into the matching review issue.
+
+12. Annual governance review now includes a repository-backed change summary.
+    - Files: `.github/workflows/itsg33-annual-review.yml`, `scripts/collect-governance-diff.js`
+    - Rationale: annual reviewers now receive an artifact summarizing security-document, workflow, and security-sensitive code changes since the start of the review window instead of reopening the governance issue without current technical context.
 
 Residual Non-Code Controls
 --------------------------

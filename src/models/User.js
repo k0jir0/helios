@@ -8,6 +8,7 @@ const {
 } = require('../utils/sensitiveModelEncryption');
 
 const MISSION_ROLES = [
+    'external',
     'operator',
     'analyst',
     'mission_lead',
@@ -166,6 +167,25 @@ const userSchema = new mongoose.Schema({
         lastLockAt: {
             type: Date,
             default: null
+        }
+    },
+    accountState: {
+        status: {
+            type: String,
+            enum: ['active', 'disabled'],
+            default: 'active'
+        },
+        disabledAt: {
+            type: Date,
+            default: null
+        },
+        disabledReason: {
+            type: String,
+            default: ''
+        },
+        disabledBy: {
+            type: String,
+            default: ''
         }
     },
     authenticationState: {

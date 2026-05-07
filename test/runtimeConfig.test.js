@@ -127,11 +127,15 @@ describe('Runtime Config Validation', () => {
             requireClientCertificate: false,
             trustProxyClientCertHeaders: false,
             trustProxyHops: 0,
+            trustedProxyAddresses: [],
             tlsMinVersion: '',
             tlsMaxVersion: '',
             keyPath: '',
             certPath: '',
-            caPath: ''
+            caPath: '',
+            secureTransportRequired: false,
+            proxyTlsTerminated: false,
+            publicOriginHttps: false
         });
         expect(config.breakGlass).to.deep.equal({
             mode: 'disabled',
@@ -240,11 +244,15 @@ describe('Runtime Config Validation', () => {
             requireClientCertificate: true,
             trustProxyClientCertHeaders: false,
             trustProxyHops: 0,
+            trustedProxyAddresses: [],
             tlsMinVersion: 'TLSv1.3',
             tlsMaxVersion: 'TLSv1.3',
             keyPath: 'C:\\tls\\server.key',
             certPath: 'C:\\tls\\server.crt',
-            caPath: 'C:\\tls\\ca.crt'
+            caPath: 'C:\\tls\\ca.crt',
+            secureTransportRequired: false,
+            proxyTlsTerminated: false,
+            publicOriginHttps: false
         });
     });
 
@@ -258,6 +266,22 @@ describe('Runtime Config Validation', () => {
         expect(config.transport.trustProxyClientCertHeaders).to.equal(false);
     });
 
+    it('accepts protected proxy-terminated HTTPS without requiring exact proxy addresses', () => {
+        const env = createValidEnv();
+        env.NODE_ENV = 'staging';
+        env.APP_BASE_URL = 'https://note-app.example.gov';
+        env.MONGODB_URI = 'mongodb://127.0.0.1:27017/helios?tls=true';
+        env.TRUST_PROXY_HOPS = '1';
+        env.IMMUTABLE_LOGGING_ENABLED = 'true';
+        env.IMMUTABLE_LOGGING_URL = 'https://logs.example.gov/append';
+        env.IMMUTABLE_LOGGING_TOKEN = 'ci-log-token';
+
+        const config = validateRuntimeConfig(env);
+
+        expect(config.transport.proxyTlsTerminated).to.equal(true);
+        expect(config.transport.trustedProxyAddresses).to.deep.equal([]);
+    });
+
     it('requires explicit proxy-hop trust before client-certificate headers can be trusted', () => {
         const env = createValidEnv();
         env.TRUST_PROXY_CLIENT_CERT_HEADERS = 'true';
@@ -265,11 +289,13 @@ describe('Runtime Config Validation', () => {
         expect(() => validateRuntimeConfig(env)).to.throw('TRUST_PROXY_CLIENT_CERT_HEADERS=true requires TRUST_PROXY_HOPS to be at least 1');
 
         env.TRUST_PROXY_HOPS = '1';
+        env.TRUSTED_PROXY_ADDRESSES = '127.0.0.1';
 
         const config = validateRuntimeConfig(env);
 
         expect(config.transport.trustProxyClientCertHeaders).to.equal(true);
         expect(config.transport.trustProxyHops).to.equal(1);
+        expect(config.transport.trustedProxyAddresses).to.deep.equal(['127.0.0.1']);
     });
 
     it('accepts valid break-glass runtime defaults and diagnostics', () => {
@@ -443,6 +469,8 @@ describe('Runtime Config Validation', () => {
             requireClientCertificate: false,
             trustProxyClientCertHeaders: true,
             trustProxyHops: 1,
+            secureTransportRequired: false,
+            proxyTlsTerminated: false,
             tlsMinVersion: 'TLSv1.3',
             tlsMaxVersion: 'TLSv1.3'
         });

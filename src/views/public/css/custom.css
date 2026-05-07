@@ -317,6 +317,21 @@ body.dark-mode .table tbody td {
   border-color: #1f2a36;
 }
 
+/* Override Bootstrap 5 CSS-variable-driven table backgrounds in dark mode */
+body.dark-mode .table,
+body.dark-mode .table > :not(caption) > * > * {
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: #0a1520;
+  --bs-table-hover-bg: #0f1e2d;
+  background-color: transparent;
+  color: #e6eef8;
+  border-color: #1f2a36;
+}
+
+body.dark-mode .table-responsive {
+  background-color: transparent;
+}
+
 body.dark-mode .table-striped tbody tr:nth-of-type(odd) {
   background: #07131b;
 }

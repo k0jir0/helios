@@ -9,8 +9,13 @@ const {
     isAccountLocked,
     recordFailedLoginAttempt
 } = require('../services/authLockoutService');
+const { isAccountDisabled } = require('../services/accountLifecycleService');
+const {
+    buildSelfRegisteredAccessProfile,
+    isGoogleAutoProvisionEnabled
+} = require('../services/identityProvisioningService');
 
-module.exports = function (passport) {
+module.exports = function (passport, runtimeConfig = {}) {
     passport.use(new LocalStrategy({
         usernameField: 'email',
         passReqToCallback: true
@@ -19,6 +24,10 @@ module.exports = function (passport) {
             const normalizedEmail = String(email || '').trim().toLowerCase();
             // Get the user from the database
             const user = await User.findOne({ email: normalizedEmail });
+
+            if (user && isAccountDisabled(user)) {
+                return done(null, false, { code: 'ACCOUNT_DISABLED', message: 'Account disabled.' });
+            }
 
             if (user && isAccountLocked(user)) {
                 return done(null, false, { code: 'ACCOUNT_LOCKED', message: 'Account locked.' });
@@ -61,6 +70,7 @@ module.exports = function (passport) {
     if (hasGoogleAuthCredentials()) {
         const googleCallbackPath = '/auth/oauth2/redirect/google';
         const configuredAppBaseUrl = getConfiguredAppBaseUrl();
+        const googleAutoProvisionEnabled = isGoogleAutoProvisionEnabled(runtimeConfig);
 
         passport.use(new GoogleStrategy({
             clientID: process.env.GOOGLE_CLIENT_ID,
@@ -74,6 +84,10 @@ module.exports = function (passport) {
                 // Check if user already exists with Google ID
                 let user = await User.findOne({ googleId: profile.id });
                 if (user) {
+                    if (isAccountDisabled(user)) {
+                        return cb(null, false, { code: 'ACCOUNT_DISABLED', message: 'Account disabled.' });
+                    }
+
                     if (isAccountLocked(user)) {
                         return cb(null, false, { code: 'ACCOUNT_LOCKED', message: 'Account locked.' });
                     }
@@ -88,9 +102,20 @@ module.exports = function (passport) {
                     email = profile.emails[0].value;
                 }
 
+                if (!email) {
+                    return cb(null, false, {
+                        code: 'IDENTITY_NOT_PROVISIONED',
+                        message: 'Provisioned email identity required.'
+                    });
+                }
+
                 if (email) {
                     user = await User.findOne({ email: email });
                     if (user) {
+                        if (isAccountDisabled(user)) {
+                            return cb(null, false, { code: 'ACCOUNT_DISABLED', message: 'Account disabled.' });
+                        }
+
                         if (isAccountLocked(user)) {
                             return cb(null, false, { code: 'ACCOUNT_LOCKED', message: 'Account locked.' });
                         }
@@ -101,11 +126,19 @@ module.exports = function (passport) {
                     }
                 }
 
+                if (!googleAutoProvisionEnabled) {
+                    return cb(null, false, {
+                        code: 'IDENTITY_NOT_PROVISIONED',
+                        message: 'Provisioned identity required.'
+                    });
+                }
+
                 // Create new google user
                 const newUser = new User({
                     googleId: profile.id,
                     name: profile.displayName,
-                    email: email
+                    email,
+                    accessProfile: buildSelfRegisteredAccessProfile(runtimeConfig)
                 });
 
                 await newUser.save();
