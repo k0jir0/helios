@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 const CHALLENGE_BYTES = 32;
-const RP_NAME = 'test-app';
+const RP_NAME = 'Helios';
 
 function createWebAuthnError(message, code) {
     const error = new Error(message);

@@ -92,7 +92,7 @@ if ($UsePm2) {
 }
 
 $webCommand = if ($Production) { 'npm start' } else { 'npm run start-dev' }
-$webLabel = if ($Production) { 'test-app web (prod)' } else { 'test-app web (dev)' }
+$webLabel = if ($Production) { 'Helios web (prod)' } else { 'Helios web (dev)' }
 $webProcess = Start-LocalProcessWindow -Title $webLabel -CommandText $webCommand
 
 if (-not $CurrentWindow) {
@@ -101,7 +101,7 @@ if (-not $CurrentWindow) {
 }
 
 if ($WithWorker) {
-    Start-LocalProcessWindow -Title 'test-app background worker' -CommandText 'npm run worker'
+    Start-LocalProcessWindow -Title 'Helios background worker' -CommandText 'npm run worker'
 }
 
 $workerMessage = if ($WithWorker) { ' and the background worker' } else { '' }
