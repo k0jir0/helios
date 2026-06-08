@@ -78,7 +78,7 @@ jobs:
 
       - name: Upload governance diff artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.review_period.outputs.artifact }}
           path: artifacts/itsg33/annual-review/governance-diff.json
@@ -92,7 +92,7 @@ jobs:
           GOVERNANCE_ARTIFACT_NAME: ${{ steps.review_period.outputs.artifact }}
           GOVERNANCE_MODE: ${{ steps.governance_diff.outputs.mode }}
           GOVERNANCE_OUTCOME: ${{ steps.governance_diff.outcome }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { owner, repo } = context.repo;

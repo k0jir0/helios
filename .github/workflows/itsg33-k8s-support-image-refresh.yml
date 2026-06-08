@@ -33,7 +33,7 @@ jobs:
         run: npm run itsg33:k8s-pins:check
 
       - name: Create pull request for digest refresh
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: automation/itsg33-k8s-digest-refresh
           commit-message: 'build(k8s): refresh pinned support image digests'

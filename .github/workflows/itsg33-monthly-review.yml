@@ -46,7 +46,7 @@ jobs:
 
       - name: Locate previous privileged-access artifact
         id: previous_privileged_artifact
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           CURRENT_ARTIFACT_NAME: ${{ steps.artifact_names.outputs.privileged }}
         with:
@@ -281,7 +281,7 @@ jobs:
 
       - name: Upload audit-health artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact_names.outputs.audit }}
           path: artifacts/itsg33/monthly-review/audit-health.json
@@ -289,7 +289,7 @@ jobs:
 
       - name: Upload privileged-access artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact_names.outputs.privileged }}
           path: artifacts/itsg33/monthly-review/privileged-access-report.json
@@ -297,7 +297,7 @@ jobs:
 
       - name: Upload secret-rotation artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact_names.outputs.rotation }}
           path: artifacts/itsg33/monthly-review/secret-rotation.json
@@ -319,7 +319,7 @@ jobs:
           PRIVILEGED_BASELINE: ${{ steps.privileged_access.outputs.baseline }}
           PREVIOUS_ARTIFACT_FOUND: ${{ steps.previous_privileged_artifact.outputs.found }}
           PREVIOUS_ARTIFACT_NAME: ${{ steps.previous_privileged_artifact.outputs.name }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { owner, repo } = context.repo;
