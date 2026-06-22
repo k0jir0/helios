@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Generate release evidence rollup
         id: rollup
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
@@ -134,7 +134,7 @@ jobs:
 
       - name: Upload release evidence artifact
         if: steps.rollup.outputs.should_upload == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: itsg33-release-evidence
           path: itsg33-release-evidence.md
