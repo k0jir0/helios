@@ -11,7 +11,7 @@ jobs:
     name: SAST
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
@@ -34,7 +34,7 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
@@ -63,7 +63,7 @@ jobs:
       SELF_SIGNUP_ENABLED: 'false'
       GOOGLE_AUTO_PROVISION_ENABLED: 'false'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
@@ -105,7 +105,7 @@ jobs:
       SCAN_BATCH_ENABLED: 'false'
       INTRUSION_BATCH_ENABLED: 'false'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
@@ -139,7 +139,7 @@ jobs:
           artifact_name: 'zap-baseline-report'
       - name: Upload app log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dast-app-log
           path: app.log
