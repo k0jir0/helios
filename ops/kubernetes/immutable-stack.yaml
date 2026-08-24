@@ -112,7 +112,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: mongo
-          image: docker.io/library/mongo:7@sha256:038b9c9f31c4a5b2a834a8f0e164312815ed651812aa8bca70bc1b521008409d
+          image: docker.io/library/mongo:7@sha256:76f1e3cc36f46a79f98f30736174fa0c55a2ba41d6ce860e4e551e3ffbcce009
           imagePullPolicy: IfNotPresent
           command:
             - mongod
@@ -487,3 +487,5 @@ spec:
                   kubectl rollout restart deployment/helios deployment/helios-proxy -n helios
                   kubectl rollout status deployment/helios -n helios --timeout=10m
                   kubectl rollout status deployment/helios-proxy -n helios --timeout=10m
+
+
